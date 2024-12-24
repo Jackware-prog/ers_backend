@@ -1,26 +1,47 @@
 package com.erwebsocket.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "app_user") // Use a non-reserved table name
+@Table(name = "app_user")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userid;
+
+    @Column(nullable = false, unique = true)
+    private String ic;
+
     private String name;
+
+    private String password;
+
+    @Column(nullable = false, unique = true)
     private String email;
 
-    public String getEmail() {
-        return email;
+    @Column(nullable = false, unique = true)
+    private String phonenumber;
+
+    private String address;
+
+    private String state;
+
+    // Getters and Setters
+    public Long getUserid() {
+        return userid;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUserid(Long userid) {
+        this.userid = userid;
+    }
+
+    public String getIC() {
+        return ic;
+    }
+
+    public void setIC(String ic) {
+        this.ic = ic;
     }
 
     public String getName() {
@@ -31,12 +52,44 @@ public class User {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
+    public String getPassword() {
+        return password;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPassword(String password) {
+        this.password = password;
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhonenumber() {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
 }
-

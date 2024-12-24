@@ -3,8 +3,13 @@ package com.erwebsocket.repository;
 import com.erwebsocket.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    User findByName(String name);
+import java.util.Optional;
 
-    User deleteById(int id);
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByemail(String email);
+
+    Optional<User> findByic(String IC);
+
+    Optional<User> findByphonenumber(String phonenumber);
+
 }
