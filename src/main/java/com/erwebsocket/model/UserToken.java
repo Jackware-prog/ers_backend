@@ -12,8 +12,12 @@ public class UserToken {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userid", nullable = false)
+    @JoinColumn(name = "userid", nullable = true)
     private User userid;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "adminid", nullable = true)
+    private Admin adminid;
 
     @Column(nullable = false, unique = true)
     private String fcmToken;
@@ -24,8 +28,9 @@ public class UserToken {
     // Constructors
     public UserToken() {}
 
-    public UserToken(User userid, String fcmToken, LocalDateTime updatedAt) {
+    public UserToken(User userid, Admin adminid, String fcmToken, LocalDateTime updatedAt) {
         this.userid = userid;
+        this.adminid = adminid;
         this.fcmToken = fcmToken;
         this.updatedAt = updatedAt;
     }
@@ -45,6 +50,14 @@ public class UserToken {
 
     public void setUser(User user) {
         this.userid = user;
+    }
+
+    public Admin getAdmin() {
+        return adminid;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.adminid = admin;
     }
 
     public String getFcmToken() {

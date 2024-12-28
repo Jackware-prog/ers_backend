@@ -2,6 +2,7 @@ package com.erwebsocket.service;
 
 import com.erwebsocket.model.UserToken;
 import com.erwebsocket.model.User;
+import com.erwebsocket.model.Admin;
 import com.erwebsocket.repository.UserTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ public class UserTokenService {
     @Autowired
     private UserTokenRepository userTokenRepository;
 
-    public UserToken saveOrUpdateToken(User userid, String fcmToken) {
-        // Check if the token already exists for this user
-        Optional<UserToken> existingToken = userTokenRepository.findByuserid(userid);
+    public UserToken saveOrUpdateToken(User user, Admin admin, String fcmToken) {
+        // Check if the token already exists for this user or admin
+        Optional<UserToken> existingToken = user != null ?
+                userTokenRepository.findByuserid(user) :
+                userTokenRepository.findByadminid(admin);
 
         if (existingToken.isPresent()) {
             UserToken token = existingToken.get();
@@ -28,17 +31,25 @@ public class UserTokenService {
         }
 
         // Save a new token record
-        UserToken newToken = new UserToken(userid, fcmToken, LocalDateTime.now());
+        UserToken newToken = new UserToken(user, admin, fcmToken, LocalDateTime.now());
         return userTokenRepository.save(newToken);
     }
 
-    public Optional<UserToken> getTokenByUser(User userid) {
-        return userTokenRepository.findByuserid(userid);
+    public Optional<UserToken> getTokenByUser(User user) {
+        return userTokenRepository.findByuserid(user);
+    }
+
+    public Optional<UserToken> getTokenByAdmin(Admin admin) {
+        return userTokenRepository.findByadminid(admin);
     }
 
     @Transactional
-    public void deleteTokenByUser(User userid) {
-        userTokenRepository.deleteByuserid(userid);
+    public void deleteTokenByUser(User user) {
+        userTokenRepository.deleteByuserid(user);
+    }
+
+    @Transactional
+    public void deleteTokenByAdmin(Admin admin) {
+        userTokenRepository.deleteByadminid(admin);
     }
 }
-

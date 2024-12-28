@@ -1,5 +1,6 @@
 package com.erwebsocket.controller;
 
+import com.erwebsocket.model.Admin;
 import com.erwebsocket.model.User;
 import com.erwebsocket.model.UserToken;
 import com.erwebsocket.service.UserTokenService;
@@ -19,34 +20,28 @@ public class UserTokenController {
 
     @PostMapping("/save")
     public ResponseEntity<UserToken> saveOrUpdateToken(@RequestBody Map<String, String> payload) {
-        Long userId = Long.parseLong(payload.get("userId"));
         String fcmToken = payload.get("fcmToken");
+        Long userId = payload.containsKey("userId") ? Long.parseLong(payload.get("userId")) : null;
+        Long adminId = payload.containsKey("adminId") ? Long.parseLong(payload.get("adminId")) : null;
 
-        User user = new User();
-        user.setUserid(userId);
+        User user = userId != null ? new User() : null;
+        Admin admin = adminId != null ? new Admin() : null;
 
-        UserToken savedToken = userTokenService.saveOrUpdateToken(user, fcmToken);
+        if (user != null) user.setUserid(userId);
+        if (admin != null) admin.setAdminid(adminId);
+
+        UserToken savedToken = userTokenService.saveOrUpdateToken(user, admin, fcmToken);
         return ResponseEntity.ok(savedToken);
     }
 
-    @GetMapping("/get/{userId}")
-    public ResponseEntity<Optional<UserToken>> getTokenByUserId(@PathVariable Long userId) {
-        User user = new User();
-        user.setUserid(userId);
-        Optional<UserToken> userToken = userTokenService.getTokenByUser(user);
-
-        if (userToken.isPresent()) {
-            return ResponseEntity.ok(userToken);
-        } else {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteToken(@RequestParam(required = false) Long userId,
+                                            @RequestParam(required = false) Long adminId) {
+        if (userId != null) {
+            userTokenService.deleteTokenByUser(new User() {{ setUserid(userId); }});
+        } else if (adminId != null) {
+            userTokenService.deleteTokenByAdmin(new Admin() {{ setAdminid(adminId); }});
         }
-    }
-
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<Void> deleteTokenByUserId(@PathVariable Long userId) {
-        User user = new User();
-        user.setUserid(userId);
-        userTokenService.deleteTokenByUser(user);
         return ResponseEntity.noContent().build();
     }
 }
