@@ -1,20 +1,22 @@
 package com.erwebsocket.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "report_log")
-public class ReportLog {
+@Table(name = "emergency_log")
+public class EmergencyLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reportlogid;
+    private Long emergencylogid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reportid", nullable = false)
-    private Report report;
+    @JoinColumn(name = "emergencyid", nullable = false)
+    @JsonIgnore
+    private Emergency emergency;
 
     @Column(nullable = false)
     private String description;
@@ -25,24 +27,24 @@ public class ReportLog {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
-    @OneToMany(mappedBy = "reportLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "emergencyLog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> media;
 
     // Getters and Setters
-    public Long getReportlogid() {
-        return reportlogid;
+    public Long getEmergencylogid() {
+        return emergencylogid;
     }
 
-    public void setReportlogid(Long reportlogid) {
-        this.reportlogid = reportlogid;
+    public void setEmergencylogid(Long emergencylogid) {
+        this.emergencylogid = emergencylogid;
     }
 
-    public Report getReport() {
-        return report;
+    public Emergency getEmergency() {
+        return emergency;
     }
 
-    public void setReport(Report report) {
-        this.report = report;
+    public void setEmergency(Emergency emergency) {
+        this.emergency = emergency;
     }
 
     public String getDescription() {

@@ -11,6 +11,9 @@ public class Admin {
     private Long adminid;
 
     @Column(nullable = false, unique = true)
+    private String adminemail;
+
+    @Column(nullable = false)
     private String adminname;
 
     @Column(nullable = false)
@@ -20,14 +23,16 @@ public class Admin {
     private String role;
 
     @Column(nullable = false)
-    private Boolean status;
+    private String status;
 
     // Constructors
     public Admin() {}
 
-    public Admin(String adminname, String password, Boolean status) {
+    public Admin(String adminemail,String adminname, String password, String role, String status) {
+        this.adminemail = adminemail;
         this.adminname = adminname;
         this.password = password;
+        this.role = role;
         this.status = status;
     }
 
@@ -38,6 +43,14 @@ public class Admin {
 
     public void setAdminid(Long adminid) {
         this.adminid = adminid;
+    }
+
+    public String getAdminemail() {
+        return adminemail;
+    }
+
+    public void setAdminemail(String adminemail) {
+        this.adminemail = adminemail;
     }
 
     public String getAdminname() {
@@ -56,11 +69,19 @@ public class Admin {
         this.password = password;
     }
 
-    public Boolean getStatus() {
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

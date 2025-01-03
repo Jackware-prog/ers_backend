@@ -1,20 +1,24 @@
 package com.erwebsocket.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "report")
-public class Report {
+@Table(name = "emergency")
+public class Emergency {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reportid;
+    private Long emergencyid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "userid", nullable = false)
+    @JsonManagedReference
     private User user;
 
     @Column(nullable = false)
@@ -25,6 +29,8 @@ public class Report {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    private LocalDateTime closeTimestamp;
 
     @Column(nullable = false)
     private String status;
@@ -41,16 +47,18 @@ public class Report {
     @Column(nullable = false, precision = 11, scale = 8)
     private BigDecimal longitude;
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReportLog> reportLogs;
+    @OneToMany(mappedBy = "emergency", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmergencyLog> emergencyLogs;
+
+
 
     // Getters and Setters
-    public Long getReportid() {
-        return reportid;
+    public Long getEmergencyid() {
+        return emergencyid;
     }
 
-    public void setReportid(Long reportid) {
-        this.reportid = reportid;
+    public void setEmergencyid(Long emergencyid) {
+        this.emergencyid = emergencyid;
     }
 
     public User getUser() {
@@ -83,6 +91,14 @@ public class Report {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public LocalDateTime getCloseTimestamp() {
+        return closeTimestamp;
+    }
+
+    public void setCloseTimestamp(LocalDateTime closeTimestamp) {
+        this.closeTimestamp = closeTimestamp;
     }
 
     public String getStatus() {
@@ -125,11 +141,11 @@ public class Report {
         this.longitude = longitude;
     }
 
-    public List<ReportLog> getReportLogs() {
-        return reportLogs;
+    public List<EmergencyLog> getReportLogs() {
+        return emergencyLogs;
     }
 
-    public void setReportLogs(List<ReportLog> reportLogs) {
-        this.reportLogs = reportLogs;
+    public void setReportLogs(List<EmergencyLog> emergencyLogs) {
+        this.emergencyLogs = emergencyLogs;
     }
 }

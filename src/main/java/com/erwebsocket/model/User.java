@@ -1,6 +1,9 @@
 package com.erwebsocket.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "app_user")
@@ -26,6 +29,11 @@ public class User {
     private String address;
 
     private String state;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    private List<Emergency> emergencies;
+
 
     // Getters and Setters
     public Long getUserid() {

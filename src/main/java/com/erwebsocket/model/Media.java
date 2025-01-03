@@ -1,5 +1,6 @@
 package com.erwebsocket.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,8 +12,9 @@ public class Media {
     private Long mediaid;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reportlogid", nullable = false)
-    private ReportLog reportLog;
+    @JoinColumn(name = "emergencylogid", nullable = false)
+    @JsonIgnore
+    private EmergencyLog emergencyLog;
 
     @Column(nullable = false)
     private String mediaType;
@@ -29,12 +31,12 @@ public class Media {
         this.mediaid = mediaid;
     }
 
-    public ReportLog getReportLog() {
-        return reportLog;
+    public EmergencyLog getEmergencyLog() {
+        return emergencyLog;
     }
 
-    public void setReportLog(ReportLog reportLog) {
-        this.reportLog = reportLog;
+    public void setEmergencyLog(EmergencyLog emergencyLog) {
+        this.emergencyLog = emergencyLog;
     }
 
     public String getMediaType() {
