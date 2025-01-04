@@ -1,16 +1,9 @@
 package com.erwebsocket.controller;
 
-import com.erwebsocket.model.Media;
-import com.erwebsocket.model.Emergency;
-import com.erwebsocket.model.EmergencyLog;
-import com.erwebsocket.model.User;
-import com.erwebsocket.repository.MediaRepository;
-import com.erwebsocket.repository.EmergencyLogRepository;
-import com.erwebsocket.repository.EmergencyRepository;
-import com.erwebsocket.repository.UserRepository;
+import com.erwebsocket.model.*;
+import com.erwebsocket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,8 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -38,7 +30,7 @@ public class EmergencyController {
     private MediaRepository mediaRepository;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private CaseHandlingRepository caseHandlingRepository;
 
     //Create New Report
     @PostMapping("/create")
@@ -136,7 +128,6 @@ public class EmergencyController {
                 }
             }
 
-            messagingTemplate.convertAndSend("/topic/reports", emergency);
 
             return ResponseEntity.ok("Report created successfully!");
 
@@ -240,6 +231,42 @@ public class EmergencyController {
     @GetMapping("/emergency-detail/{emergencyId}")
     public Emergency getReportDetail(@PathVariable Long emergencyId) {
         return emergencyRepository.findByEmergencyid(emergencyId);
+    }
+
+    @GetMapping("/admin/map")
+    public ResponseEntity<List<Map<String, Object>>> getRecentEmergencies() {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusHours(36);
+        List<Emergency> emergencies = emergencyRepository.findByTimestampAfterOrderByTimestampDesc(cutoffTime);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Emergency emergency : emergencies) {
+            Map<String, Object> emergencyData = new HashMap<>();
+            emergencyData.put("emergencyId", emergency.getEmergencyid());
+            emergencyData.put("emergencyType", emergency.getEmergencyType());
+            emergencyData.put("timestamp", emergency.getTimestamp());
+            emergencyData.put("closeTimestamp", emergency.getCloseTimestamp());
+            emergencyData.put("latitude", emergency.getLatitude());
+            emergencyData.put("longitude", emergency.getLongitude());
+            emergencyData.put("status", emergency.getStatus());
+            emergencyData.put("isPublish", emergency.getIsPublish());
+            emergencyData.put("isFalseMessage", emergency.getIsFalseMessage());
+
+            Optional<CaseHandling> caseHandling = caseHandlingRepository.findByEmergencyId(emergency.getEmergencyid());
+            if (caseHandling.isPresent()) {
+                emergencyData.put("isHandled", true);
+                Admin admin = caseHandling.get().getAdmin();
+                emergencyData.put("adminId", admin.getAdminid());
+                emergencyData.put("adminName", admin.getAdminname());
+                emergencyData.put("adminEmail", admin.getAdminemail());
+            } else {
+                emergencyData.put("isHandled", false);
+            }
+
+            result.add(emergencyData);
+        }
+
+        return ResponseEntity.ok(result);
     }
 
 }

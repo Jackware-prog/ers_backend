@@ -4,6 +4,7 @@ import com.erwebsocket.model.CaseHandling;
 import com.erwebsocket.model.Emergency;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,10 @@ public interface CaseHandlingRepository extends JpaRepository<CaseHandling, Long
     CaseHandling findBycaseidWithUser(Long caseid);
 
     Optional<CaseHandling> findByCaseid(Long caseid);
+
+    @Query("SELECT c FROM CaseHandling c WHERE c.emergency.emergencyid = :emergencyId")
+    Optional<CaseHandling> findByEmergencyId(@Param("emergencyId") Long emergencyId);
+
+    boolean existsByEmergencyEmergencyidAndAdminAdminid(Long emergencyId, Long adminId);
+
 }

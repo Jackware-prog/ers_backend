@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*") // Allow all origins (temporarily)
+                        .allowedOrigins("*") // Use allowedOriginPatterns for wildcard
                         .allowedMethods("*")
                         .allowedHeaders("*");
             }

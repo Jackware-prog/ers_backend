@@ -12,8 +12,9 @@ public interface EmergencyRepository extends JpaRepository<Emergency, Long> {
     Emergency findByEmergencyid(Long emergencyid); // Fetch by reportid
     List<Emergency> findByIsPublishTrueAndTimestampAfterOrderByTimestampDesc(LocalDateTime timestamp);// Fetch by timestamp
 
-    @Query("SELECT e FROM Emergency e WHERE e.status = 'active' AND e.emergencyid NOT IN (SELECT c.emergency.emergencyid FROM CaseHandling c)")
+    @Query("SELECT e FROM Emergency e WHERE e.status = 'active' AND e.emergencyid NOT IN (SELECT c.emergency.emergencyid FROM CaseHandling c) ORDER BY e.timestamp desc")
     List<Emergency> findUnhandledReports();
 
+    List<Emergency> findByTimestampAfterOrderByTimestampDesc(LocalDateTime startTime);
 }
 

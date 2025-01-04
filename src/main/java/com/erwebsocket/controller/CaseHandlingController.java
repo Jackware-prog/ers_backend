@@ -8,6 +8,7 @@ import com.erwebsocket.repository.AdminRepository;
 import com.erwebsocket.repository.CaseHandlingRepository;
 import com.erwebsocket.repository.CaseLogRepository;
 import com.erwebsocket.repository.EmergencyRepository;
+import com.erwebsocket.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ public class CaseHandlingController {
 
     @Autowired
     private CaseLogRepository caseLogRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/{caseid}")
     public ResponseEntity<CaseHandling> findByCaseid(@PathVariable Long caseid) {
@@ -71,6 +75,14 @@ public class CaseHandlingController {
         }
     }
 
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> checkCaseHandlingExists(
+            @RequestParam("emergencyid") Long emergencyId,
+            @RequestParam("adminid") Long adminId) {
+        boolean exists = caseHandlingRepository.existsByEmergencyEmergencyidAndAdminAdminid(emergencyId, adminId);
+        return ResponseEntity.ok(exists);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> createCaseHandling(@RequestBody CreateCaseHandlingRequest request) {
         try {
@@ -94,6 +106,8 @@ public class CaseHandlingController {
 
             // Save the CaseHandling
             CaseHandling savedCaseHandling = caseHandlingRepository.save(caseHandling);
+
+            notificationService.sendNotification(caseHandling.getEmergency().getUser().getUserid(),"Emergency ID: " + caseHandling.getEmergency().getEmergencyid(),"Your reported emergency is handled by a Responders.");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(savedCaseHandling);
         } catch (Exception e) {
@@ -137,6 +151,10 @@ public class CaseHandlingController {
 
         caseLogRepository.save(caseLog);
 
+        notificationService.sendNotification(caseLog.getCaseHandling().getEmergency().getUser().getUserid(),
+                "Emergency ID: " + caseLog.getCaseHandling().getEmergency().getEmergencyid() + " (" +caseLog.getCaseHandling().getEmergency().getEmergencyType() + ")",
+                "Responder has " + caseLog.getActionTaken() + ".");
+
         return ResponseEntity.ok(caseLog);
     }
 
@@ -171,6 +189,8 @@ public class CaseHandlingController {
             emergency.setStatus("closed");
             emergency.setCloseTimestamp(LocalDateTime.now());
             emergencyRepository.save(emergency);
+            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency ID: " + emergency.getEmergencyid(),"Your reported emergency has identified as False Message.");
+
             return ResponseEntity.ok("Emergency marked as false message successfully.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }
@@ -181,6 +201,7 @@ public class CaseHandlingController {
         return emergencyRepository.findById(emergencyId).map(emergency -> {
             emergency.setIsPublish(true);
             emergencyRepository.save(emergency);
+            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency Type: " +  emergency.getEmergencyid() ,"Reported " + emergency.getEmergencyid() + " has published to the map.");
             return ResponseEntity.ok("Emergency published successfully.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }
@@ -192,6 +213,7 @@ public class CaseHandlingController {
             emergency.setStatus("closed");
             emergency.setCloseTimestamp(LocalDateTime.now());
             emergencyRepository.save(emergency);
+            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency ID: " + emergency.getEmergencyid(),"Thanks for your contribution. Reported Emergency: " + emergency.getEmergencyType() + " has resolved");
             return ResponseEntity.ok("Emergency has resolved.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }
@@ -207,6 +229,7 @@ public class CaseHandlingController {
             emergency.setIsPublish(isPublish);
             emergency.setCloseTimestamp(LocalDateTime.now());
             emergencyRepository.save(emergency);
+            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency ID: " + emergency.getEmergencyid(),"Thanks for your contribution. Reported Emergency: " + emergency.getEmergencyType() + " has resolved" + (emergency.getIsPublish() ? " and published." : "."));
             return ResponseEntity.ok("Emergency status and publish state updated successfully.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }
