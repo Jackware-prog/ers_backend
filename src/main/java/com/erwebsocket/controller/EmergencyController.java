@@ -3,6 +3,7 @@ package com.erwebsocket.controller;
 import com.erwebsocket.model.*;
 import com.erwebsocket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -229,9 +230,53 @@ public class EmergencyController {
 
     // Fetch recent report
     @GetMapping("/emergency-detail/{emergencyId}")
-    public Emergency getReportDetail(@PathVariable Long emergencyId) {
-        return emergencyRepository.findByEmergencyid(emergencyId);
+    public ResponseEntity<?> getReportDetail(@PathVariable Long emergencyId) {
+        // Fetch emergency details
+        Emergency emergency = emergencyRepository.findByEmergencyid(emergencyId);
+
+        if (emergency == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found.");
+        }
+
+        // Create a response map to hold flattened data
+        Map<String, Object> response = new HashMap<>();
+
+        // Add Emergency fields to the response
+        response.put("emergencyid", emergency.getEmergencyid());
+        response.put("emergencyType", emergency.getEmergencyType());
+        response.put("isVictim", emergency.getIsVictim());
+        response.put("timestamp", emergency.getTimestamp());
+        response.put("closeTimestamp", emergency.getTimestamp());
+        response.put("status", emergency.getStatus());
+        response.put("isPublish", emergency.getIsPublish());
+        response.put("isFalseMessage", emergency.getIsFalseMessage());
+        response.put("latitude", emergency.getLatitude());
+        response.put("longitude", emergency.getLongitude());
+        List<EmergencyLog> emergencyLogs = emergency.getReportLogs();
+        response.put("reportLogs", emergencyLogs);
+
+        // Check if emergencyId exists in CaseHandling
+        Optional<CaseHandling> caseHandlingOpt = caseHandlingRepository.findByEmergencyId(emergencyId);
+
+        if (caseHandlingOpt.isPresent()) {
+            CaseHandling caseHandling = caseHandlingOpt.get();
+            response.put("isHandled",true);
+            // Add CaseHandling fields to the response
+            response.put("caseId", caseHandling.getCaseid());
+            response.put("caseTimestamp", caseHandling.getTimestamp());
+            response.put("adminId", caseHandling.getAdmin().getAdminid());
+            response.put("adminName", caseHandling.getAdmin().getAdminname());
+
+            // Fetch CaseLogs associated with the CaseHandling
+            List<CaseLog> caseLogs = caseHandling.getCaseLogs();
+            response.put("caseLogs", caseLogs); // Add the list of CaseLogs directly
+        }else{
+            response.put("isHandled",false);
+        }
+
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/admin/map")
     public ResponseEntity<List<Map<String, Object>>> getRecentEmergencies() {
