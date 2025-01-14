@@ -8,6 +8,7 @@ import com.erwebsocket.repository.AdminRepository;
 import com.erwebsocket.repository.CaseHandlingRepository;
 import com.erwebsocket.repository.CaseLogRepository;
 import com.erwebsocket.repository.EmergencyRepository;
+import com.erwebsocket.service.GeocodingService;
 import com.erwebsocket.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,9 @@ public class CaseHandlingController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
     @GetMapping("/{caseid}")
     public ResponseEntity<CaseHandling> findByCaseid(@PathVariable Long caseid) {
@@ -107,7 +111,9 @@ public class CaseHandlingController {
             // Save the CaseHandling
             CaseHandling savedCaseHandling = caseHandlingRepository.save(caseHandling);
 
-            notificationService.sendNotification(caseHandling.getEmergency().getUser().getUserid(),"Emergency ID: " + caseHandling.getEmergency().getEmergencyid(),"Your reported emergency is handled by a Responders.");
+            notificationService.sendNotification(caseHandling.getEmergency().getUser().getUserid(),
+                    "Emergency ID: " + caseHandling.getEmergency().getEmergencyid(),
+                    "Your reported emergency is handled by a Responders.");
 
             return ResponseEntity.status(HttpStatus.CREATED).body(savedCaseHandling);
         } catch (Exception e) {
@@ -201,7 +207,9 @@ public class CaseHandlingController {
         return emergencyRepository.findById(emergencyId).map(emergency -> {
             emergency.setIsPublish(true);
             emergencyRepository.save(emergency);
-            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency Type: " +  emergency.getEmergencyid() ,"Reported " + emergency.getEmergencyid() + " has published to the map.");
+            notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency ID: " +  emergency.getEmergencyid() ,"Reported " + emergency.getEmergencyType() + " has published to the map.");
+
+            notificationService.sendNotificationToAllUsers("NEW EMERGENCY REPORTED", "A new " + emergency.getEmergencyType() + " is reported in " + geocodingService.getStateFromLatLong(emergency.getLatitude(),emergency.getLongitude()) + ".");
             return ResponseEntity.ok("Emergency published successfully.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }
@@ -230,6 +238,9 @@ public class CaseHandlingController {
             emergency.setCloseTimestamp(LocalDateTime.now());
             emergencyRepository.save(emergency);
             notificationService.sendNotification(emergency.getUser().getUserid(),"Emergency ID: " + emergency.getEmergencyid(),"Thanks for your contribution. Reported Emergency: " + emergency.getEmergencyType() + " has resolved" + (emergency.getIsPublish() ? " and published." : "."));
+            if(emergency.getIsPublish()){
+                notificationService.sendNotificationToAllUsers("NEW EMERGENCY REPORTED", "A new " + emergency.getEmergencyType() + " is reported in " + geocodingService.getStateFromLatLong(emergency.getLatitude(),emergency.getLongitude()) + ".");
+            }
             return ResponseEntity.ok("Emergency status and publish state updated successfully.");
         }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Emergency not found."));
     }

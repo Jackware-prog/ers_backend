@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserTokenService {
@@ -51,5 +53,12 @@ public class UserTokenService {
     @Transactional
     public void deleteTokenByAdmin(Admin admin) {
         userTokenRepository.deleteByadminid(admin);
+    }
+
+    public List<String> getAllTokens() {
+        List<UserToken> userTokens = userTokenRepository.findAll();
+        return userTokens.stream()
+                .map(UserToken::getFcmToken)
+                .collect(Collectors.toList());
     }
 }

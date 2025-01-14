@@ -5,6 +5,8 @@ import com.erwebsocket.model.UserToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class NotificationService {
 
@@ -24,5 +26,18 @@ public class NotificationService {
 
         // Use FCMService to send the notification
         fcmService.sendNotification(userToken, title, body);
+    }
+
+    // New method for all users
+    public void sendNotificationToAllUsers(String title, String body) {
+        List<String> allTokens = userTokenService.getAllTokens();
+
+        if (allTokens.isEmpty()) {
+            System.err.println("No tokens found for all users");
+            return;
+        }
+
+
+        fcmService.sendNotificationToMultipleTokens(allTokens, title, body);
     }
 }
